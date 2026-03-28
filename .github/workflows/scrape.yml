@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Trigger scrape
         run: |
-          curl -X POST https://tech-news-421457-leonardomoscovichs-projects.vercel.app/api/scrape \
+          curl -X POST https://tech-news-alpha-sepia.vercel.app/api/scrape \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             --fail \
             --silent \
