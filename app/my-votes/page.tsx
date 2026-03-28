@@ -42,10 +42,7 @@ export default async function MyVotesPage() {
         <a href="/" style={{
           fontSize: '0.8rem', color: 'var(--text-muted)', textDecoration: 'none',
           fontFamily: "'JetBrains Mono', monospace",
-        }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
-        >← volver</a>
+        }}>← volver</a>
       </div>
 
       <div style={{
