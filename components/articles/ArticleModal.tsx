@@ -30,7 +30,9 @@ function formatDate(d: string | null) {
 export default function ArticleModal({ article, onClose, onRead }: { article: Article; onClose: () => void; onRead?: () => void }) {
   const [expanded, setExpanded] = useState(false)
   const [hoverStar, setHoverStar] = useState(0)
-  const [userVote, setUserVote] = useState(0)
+  const [selectedStar, setSelectedStar] = useState(0)   // estrella hover/seleccionada antes de confirmar
+  const [savedVote, setSavedVote] = useState(0)          // voto guardado en DB
+  const [votingSaved, setVotingSaved] = useState(false)  // feedback "guardado"
   const [saved, setSaved] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [user, setUser] = useState<{ id: string } | null>(null)
@@ -58,6 +60,9 @@ export default function ArticleModal({ article, onClose, onRead }: { article: Ar
     fetch(`/api/articles/comments?article_id=${article.id}`)
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setComments(data) })
+    fetch(`/api/articles/vote?article_id=${article.id}`)
+      .then((r) => r.json())
+      .then((data) => { if (data.value) { setSavedVote(data.value); setSelectedStar(data.value) } })
     if (article.category) {
       fetch(`/api/articles/related?article_id=${article.id}&category=${encodeURIComponent(article.category)}`)
         .then((r) => r.json())
@@ -98,14 +103,17 @@ export default function ArticleModal({ article, onClose, onRead }: { article: Ar
     setComments((prev) => prev.filter((c) => c.id !== comment_id))
   }
 
-  async function handleVote(value: number) {
+  async function handleVote() {
     if (!user) { setAuthOpen(true); return }
-    setUserVote(value)
+    if (!selectedStar) return
     await fetch('/api/articles/vote', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ article_id: article.id, value }),
+      body: JSON.stringify({ article_id: article.id, value: selectedStar }),
     })
+    setSavedVote(selectedStar)
+    setVotingSaved(true)
+    setTimeout(() => setVotingSaved(false), 2000)
   }
 
   async function handleSave() {
@@ -118,7 +126,7 @@ export default function ArticleModal({ article, onClose, onRead }: { article: Ar
     })
   }
 
-  const activeStar = hoverStar || userVote
+  const activeStar = hoverStar || selectedStar
 
   return (
     <>
@@ -331,28 +339,51 @@ export default function ArticleModal({ article, onClose, onRead }: { article: Ar
             </div>
 
             {/* Votes */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace" }}>
                 // PUNTUÁ ESTE ARTÍCULO
               </span>
-              <div style={{ display: 'flex', gap: '0.35rem' }}>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <span
-                    key={n}
-                    onClick={() => handleVote(n)}
-                    onMouseEnter={() => setHoverStar(n)}
-                    onMouseLeave={() => setHoverStar(0)}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.25rem' }}>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <span
+                      key={n}
+                      onClick={() => user ? setSelectedStar(n) : setAuthOpen(true)}
+                      onMouseEnter={() => setHoverStar(n)}
+                      onMouseLeave={() => setHoverStar(0)}
+                      style={{
+                        fontSize: '1.35rem', cursor: 'pointer', transition: 'transform 0.1s',
+                        filter: n <= activeStar ? 'none' : 'grayscale(1)',
+                        opacity: n <= activeStar ? 1 : 0.35,
+                        transform: n <= activeStar ? 'scale(1.15)' : 'scale(1)',
+                      }}
+                    >⭐</span>
+                  ))}
+                </div>
+                {user && selectedStar > 0 && (
+                  <button
+                    onClick={handleVote}
                     style={{
-                      fontSize: '1.25rem', cursor: 'pointer', transition: 'transform 0.1s',
-                      filter: n <= activeStar ? 'none' : 'grayscale(1)',
-                      opacity: n <= activeStar ? 1 : 0.4,
-                      transform: n <= activeStar ? 'scale(1.1)' : 'scale(1)',
+                      background: votingSaved ? 'var(--surface2)' : 'var(--accent)',
+                      border: votingSaved ? '1px solid var(--accent)' : 'none',
+                      color: votingSaved ? 'var(--accent)' : '#0a0a0f',
+                      padding: '0.3rem 0.85rem', borderRadius: 6, cursor: 'pointer',
+                      fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem',
+                      transition: 'all 0.2s',
                     }}
-                  >⭐</span>
-                ))}
+                  >
+                    {votingSaved ? '✓ Guardado' : savedVote && savedVote !== selectedStar ? 'Cambiar puntuación' : 'Puntuar'}
+                  </button>
+                )}
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                {user ? (userVote ? `Votaste ${userVote}/5` : 'Seleccioná una puntuación') : 'Iniciá sesión para votar'}
+              <span style={{ fontSize: '0.73rem', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace" }}>
+                {!user
+                  ? 'Iniciá sesión para votar'
+                  : savedVote
+                    ? `Tu puntuación actual: ${savedVote}/5${selectedStar !== savedVote ? ` → cambiando a ${selectedStar}/5` : ''}`
+                    : selectedStar
+                      ? `Seleccionaste ${selectedStar}/5 — confirmá con el botón`
+                      : 'Seleccioná una puntuación'}
               </span>
             </div>
 

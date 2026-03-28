@@ -1,6 +1,24 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+export async function GET(request: NextRequest) {
+  const article_id = request.nextUrl.searchParams.get('article_id')
+  if (!article_id) return NextResponse.json({ value: 0 })
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ value: 0 })
+
+  const { data } = await supabase
+    .from('votes')
+    .select('value')
+    .eq('user_id', user.id)
+    .eq('article_id', article_id)
+    .single()
+
+  return NextResponse.json({ value: data?.value ?? 0 })
+}
+
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
 
