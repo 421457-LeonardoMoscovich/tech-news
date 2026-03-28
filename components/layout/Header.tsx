@@ -173,6 +173,20 @@ export default function Header() {
                         </div>
                       </div>
                       <a
+                        href="/my-votes"
+                        onClick={() => setMenuOpen(false)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '0.6rem',
+                          padding: '0.65rem 1rem', fontSize: '0.875rem',
+                          color: 'var(--text-muted)', textDecoration: 'none',
+                          transition: 'background 0.15s, color 0.15s',
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--surface2)'; e.currentTarget.style.color = 'var(--text)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                      >
+                        ⭐ Mis puntajes
+                      </a>
+                      <a
                         href="/profile"
                         onClick={() => setMenuOpen(false)}
                         style={{
