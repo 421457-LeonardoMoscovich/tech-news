@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechNews — Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0f; --surface: #13131a; --surface2: #1c1c27; --border: #2a2a3a;
+    --accent: #e8ff47; --accent2: #47b8ff; --text: #f0f0f0; --text-muted: #7a7a9a;
+    --cat-ai: #a78bfa; --cat-webdev: #34d399; --cat-security: #f87171;
+    --cat-opensource: #fb923c; --cat-hardware: #60a5fa; --cat-business: #fbbf24;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  header { position: sticky; top: 0; z-index: 100; background: rgba(10,10,15,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0 2rem; }
+  .header-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; gap: 2rem; height: 64px; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 2px; color: var(--accent); text-decoration: none; flex-shrink: 0; }
+  .logo span { color: var(--text); }
+  .search-bar { flex: 1; max-width: 400px; display: flex; align-items: center; gap: 0.5rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 1rem; transition: border-color 0.2s; }
+  .search-bar:focus-within { border-color: var(--accent); }
+  .search-bar input { background: none; border: none; outline: none; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.875rem; width: 100%; }
+  .search-bar input::placeholder { color: var(--text-muted); }
+  .header-actions { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+  .btn-login { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+  .btn-login:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-signup { background: var(--accent); border: none; color: #0a0a0f; padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-family: 'DM Sans', sans-serif; font-weight: 600; }
+  .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: none; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #0a0a0f; cursor: pointer; }
+  .hero-strip { background: linear-gradient(90deg, rgba(232,255,71,0.05), transparent); border-bottom: 1px solid var(--border); padding: 0.6rem 2rem; }
+  .hero-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; gap: 1rem; }
+  .live-badge { background: var(--accent); color: #0a0a0f; font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; font-weight: 500; letter-spacing: 1px; padding: 0.2rem 0.5rem; border-radius: 3px; }
+  .ticker { font-size: 0.8rem; color: var(--text-muted); }
+  .ticker span { color: var(--text); }
+  main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+  .category-bar { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center; }
+  .cat-label { font-size: 0.75rem; color: var(--text-muted); margin-right: 0.25rem; font-family: 'JetBrains Mono', monospace; }
+  .cat-btn { padding: 0.35rem 0.85rem; border-radius: 20px; border: 1px solid var(--border); background: none; color: var(--text-muted); font-size: 0.8rem; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s; }
+  .cat-btn.active { border-color: var(--accent); color: var(--accent); background: var(--surface2); }
+  .cat-ai.active { border-color: var(--cat-ai); color: var(--cat-ai); }
+  .cat-webdev.active { border-color: var(--cat-webdev); color: var(--cat-webdev); }
+  .cat-security.active { border-color: var(--cat-security); color: var(--cat-security); }
+  .cat-opensource.active { border-color: var(--cat-opensource); color: var(--cat-opensource); }
+  .cat-hardware.active { border-color: var(--cat-hardware); color: var(--cat-hardware); }
+  .cat-business.active { border-color: var(--cat-business); color: var(--cat-business); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 0.75rem; position: relative; overflow: hidden; }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; opacity: 0; transition: opacity 0.2s; }
+  .card.ai::before { background: var(--cat-ai); } .card.webdev::before { background: var(--cat-webdev); }
+  .card.security::before { background: var(--cat-security); } .card.opensource::before { background: var(--cat-opensource); }
+  .card.hardware::before { background: var(--cat-hardware); } .card.business::before { background: var(--cat-business); }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); } .card:hover::before { opacity: 1; }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+  .cat-tag { font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; font-weight: 500; letter-spacing: 0.5px; padding: 0.2rem 0.55rem; border-radius: 4px; text-transform: uppercase; }
+  .cat-tag.AI { background: rgba(167,139,250,0.15); color: var(--cat-ai); } .cat-tag.WebDev { background: rgba(52,211,153,0.15); color: var(--cat-webdev); }
+  .cat-tag.Security { background: rgba(248,113,113,0.15); color: var(--cat-security); } .cat-tag.OpenSource { background: rgba(251,146,60,0.15); color: var(--cat-opensource); }
+  .cat-tag.Hardware { background: rgba(96,165,250,0.15); color: var(--cat-hardware); } .cat-tag.Business { background: rgba(251,191,36,0.15); color: var(--cat-business); }
+  .score-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-muted); }
+  .score-high { color: var(--accent); }
+  .card-title { font-size: 0.95rem; font-weight: 600; line-height: 1.4; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-summary { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .tag { font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+  .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+  .source-info { font-size: 0.75rem; color: var(--text-muted); }
+  .source-info span { color: var(--text); }
+  .icon-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.9rem; padding: 0.25rem; border-radius: 4px; transition: color 0.15s; }
+  .icon-btn:hover { color: var(--accent); }
+  .section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; }
+  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1px; }
+  .section-count { font-size: 0.8rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+  .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 3rem; }
+  .page-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .page-btn.active, .page-btn:hover { background: var(--surface2); color: var(--accent); border-color: var(--accent); }
+
+  /* ── MODAL ── */
+  .modal-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 2rem; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; max-width: 680px; width: 100%; max-height: 88vh; overflow-y: auto; animation: slideUp 0.25s ease; transition: max-width 0.35s ease; }
+  .modal.expanded { max-width: 820px; }
+  @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  .modal-top { position: sticky; top: 0; background: var(--surface); padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; border-radius: 16px 16px 0 0; z-index: 1; }
+  .modal-meta { display: flex; gap: 0.75rem; align-items: center; }
+  .modal-close { background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .modal-close:hover { color: var(--text); border-color: var(--text-muted); }
+  .modal-body { padding: 1.75rem 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+  .modal-title { font-size: 1.3rem; font-weight: 600; line-height: 1.4; color: var(--text); }
+  .modal-summary-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.75; }
+  .modal-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .modal-tag { background: var(--surface2); border: 1px solid var(--border); padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); }
+  .modal-divider { height: 1px; background: var(--border); }
+  .modal-source { font-size: 0.8rem; color: var(--text-muted); }
+  .modal-source strong { color: var(--text); }
+
+  /* BOTÓN EXPANDIR */
+  .btn-expand { display: inline-flex; align-items: center; gap: 0.4rem; background: none; border: 1px dashed var(--border); color: var(--text-muted); padding: 0.35rem 0.85rem; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; transition: all 0.2s; align-self: flex-start; }
+  .btn-expand:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-expand .arrow { display: inline-block; transition: transform 0.25s; }
+  .btn-expand.open .arrow { transform: rotate(180deg); }
+
+  /* NIVEL 2 — detalle */
+  .modal-detail { overflow: hidden; max-height: 0; transition: max-height 0.4s ease, opacity 0.3s ease; opacity: 0; }
+  .modal-detail.open { max-height: 700px; opacity: 1; }
+  .modal-detail-inner { border-top: 1px solid var(--border); padding: 1.5rem 0 0.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+  .detail-section-title { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; }
+  .detail-block { display: flex; flex-direction: column; gap: 0.4rem; }
+  .detail-text { font-size: 0.875rem; color: var(--text-muted); line-height: 1.7; }
+  .key-points { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+  .key-points li { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; padding-left: 1.25rem; position: relative; }
+  .key-points li::before { content: '▸'; position: absolute; left: 0; color: var(--accent); font-size: 0.7rem; top: 0.2rem; }
+  .detail-pill-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .detail-pill { background: rgba(232,255,71,0.07); border: 1px solid rgba(232,255,71,0.2); color: var(--accent); padding: 0.2rem 0.65rem; border-radius: 20px; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; }
+  .detail-more-hint { font-size: 0.8rem; color: var(--text-muted); padding: 0.75rem 1rem; background: var(--surface2); border-radius: 8px; border-left: 2px solid var(--border); }
+
+  /* VOTE */
+  .vote-section { display: flex; flex-direction: column; gap: 0.5rem; }
+  .vote-label { font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+  .stars { display: flex; gap: 0.35rem; }
+  .star { font-size: 1.25rem; cursor: pointer; transition: transform 0.1s; filter: grayscale(1); opacity: 0.4; }
+  .star:hover, .star.active { filter: none; opacity: 1; transform: scale(1.1); }
+  .vote-hint { font-size: 0.75rem; color: var(--text-muted); }
+
+  .modal-actions { display: flex; gap: 0.75rem; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); }
+  .btn-primary { flex: 1; background: var(--accent); color: #0a0a0f; border: none; padding: 0.65rem 1.25rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.875rem; cursor: pointer; transition: opacity 0.2s; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 0.65rem 1.25rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; cursor: pointer; transition: border-color 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+  .btn-secondary:hover { border-color: var(--accent); }
+
+  /* AUTH */
+  .auth-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; }
+  .auth-overlay.open { display: flex; }
+  .auth-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 400px; padding: 2rem; animation: slideUp 0.25s ease; }
+  .auth-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 2px; color: var(--accent); margin-bottom: 0.25rem; }
+  .auth-logo span { color: var(--text); }
+  .auth-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.75rem; }
+  .auth-divider { display: flex; align-items: center; gap: 1rem; margin: 1rem 0; }
+  .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .auth-divider span { font-size: 0.75rem; color: var(--text-muted); }
+  .btn-google { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 0.7rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 1rem; transition: border-color 0.2s; }
+  .btn-google:hover { border-color: var(--accent2); }
+  .auth-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 0.65rem 1rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; margin-bottom: 0.75rem; outline: none; transition: border-color 0.2s; }
+  .auth-input:focus { border-color: var(--accent); }
+  .auth-input::placeholder { color: var(--text-muted); }
+  .auth-toggle { font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-top: 1rem; }
+  .auth-toggle a { color: var(--accent); cursor: pointer; }
+
+  /* CHAT */
+  .chat-btn { position: fixed; bottom: 2rem; right: 2rem; z-index: 150; width: 52px; height: 52px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; box-shadow: 0 4px 24px rgba(232,255,71,0.3); transition: transform 0.2s; }
+  .chat-btn:hover { transform: scale(1.05); }
+  .chat-panel { position: fixed; bottom: 5.5rem; right: 2rem; z-index: 150; width: 340px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; display: none; flex-direction: column; box-shadow: 0 16px 64px rgba(0,0,0,0.5); animation: slideUp 0.2s ease; }
+  .chat-panel.open { display: flex; }
+  .chat-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .chat-title { font-weight: 600; font-size: 0.9rem; }
+  .chat-subtitle { font-size: 0.75rem; color: var(--text-muted); }
+  .chat-messages { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 200px; max-height: 300px; overflow-y: auto; }
+  .msg { max-width: 85%; }
+  .msg.bot { align-self: flex-start; } .msg.user { align-self: flex-end; }
+  .msg-bubble { padding: 0.6rem 0.9rem; border-radius: 12px; font-size: 0.82rem; line-height: 1.5; }
+  .msg.bot .msg-bubble { background: var(--surface2); color: var(--text); border-radius: 4px 12px 12px 12px; }
+  .msg.user .msg-bubble { background: var(--accent); color: #0a0a0f; font-weight: 500; border-radius: 12px 4px 12px 12px; }
+  .chat-input-row { padding: 0.75rem 1rem; border-top: 1px solid var(--border); display: flex; gap: 0.5rem; }
+  .chat-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 0.5rem 0.75rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; outline: none; }
+  .chat-send { background: var(--accent); border: none; color: #0a0a0f; padding: 0.5rem 0.75rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#">TECH<span>NEWS</span></a>
+    <div class="search-bar">
+      <span style="color:var(--text-muted)">🔍</span>
+      <input type="text" placeholder="Buscar artículos, tecnologías, temas...">
+    </div>
+    <div class="header-actions">
+      <div class="user-avatar" id="userAvatar">LM</div>
+      <button class="btn-login" onclick="openAuth()">Iniciar sesión</button>
+      <button class="btn-signup" onclick="openAuth()">Registrarse</button>
+    </div>
+  </div>
+</header>
+
+<div class="hero-strip">
+  <div class="hero-inner">
+    <span class="live-badge">LIVE</span>
+    <div class="ticker"><span>64 artículos</span> enriquecidos con IA · Actualizado hace 2 min · Próxima actualización en <span>5h 58m</span></div>
+  </div>
+</div>
+
+<main>
+  <div class="category-bar">
+    <span class="cat-label">FILTRAR //</span>
+    <button class="cat-btn active" onclick="filterCat(this,'all')">Todos</button>
+    <button class="cat-btn cat-ai" onclick="filterCat(this,'ai')">AI</button>
+    <button class="cat-btn cat-webdev" onclick="filterCat(this,'webdev')">WebDev</button>
+    <button class="cat-btn cat-security" onclick="filterCat(this,'security')">Security</button>
+    <button class="cat-btn cat-opensource" onclick="filterCat(this,'opensource')">Open Source</button>
+    <button class="cat-btn cat-hardware" onclick="filterCat(this,'hardware')">Hardware</button>
+    <button class="cat-btn cat-business" onclick="filterCat(this,'business')">Business</button>
+  </div>
+  <div class="section-header">
+    <h2 class="section-title">ÚLTIMAS NOTICIAS</h2>
+    <span class="section-count">64 artículos · página 1/4</span>
+  </div>
+  <div class="grid" id="articleGrid"></div>
+  <div class="pagination">
+    <button class="page-btn active">1</button>
+    <button class="page-btn">2</button>
+    <button class="page-btn">3</button>
+    <button class="page-btn">4</button>
+    <button class="page-btn">›</button>
+  </div>
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <div class="modal-top">
+      <div class="modal-meta">
+        <span class="cat-tag" id="modalCat"></span>
+        <span class="score-badge"><span id="modalScore"></span> relevancia</span>
+      </div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body">
+      <h2 class="modal-title" id="modalTitle"></h2>
+      <p class="modal-summary-text" id="modalSummary"></p>
+      <div class="modal-tags" id="modalTags"></div>
+      <div class="modal-divider"></div>
+      <div class="modal-source">Fuente: <strong id="modalSource"></strong> · <span id="modalDate"></span></div>
+
+      <!-- BOTÓN EXPANDIR -->
+      <button class="btn-expand" id="btnExpand" onclick="toggleExpand()">
+        <span class="arrow">▾</span>&nbsp;Expandir detalle
+      </button>
+
+      <!-- NIVEL 2 -->
+      <div class="modal-detail" id="modalDetail">
+        <div class="modal-detail-inner">
+          <div class="detail-block">
+            <div class="detail-section-title">// ¿De qué se trata?</div>
+            <p class="detail-text" id="detailContext"></p>
+          </div>
+          <div class="detail-block">
+            <div class="detail-section-title">// Puntos clave</div>
+            <ul class="key-points" id="detailPoints"></ul>
+          </div>
+          <div class="detail-block">
+            <div class="detail-section-title">// ¿Por qué importa?</div>
+            <p class="detail-text" id="detailWhy"></p>
+          </div>
+          <div class="detail-block">
+            <div class="detail-section-title">// Relacionado con</div>
+            <div class="detail-pill-row" id="detailRelated"></div>
+          </div>
+          <div class="detail-more-hint">
+            ¿Querés todos los detalles? El artículo original tiene la historia completa →
+          </div>
+        </div>
+      </div>
+
+      <!-- VOTOS -->
+      <div class="vote-section">
+        <span class="vote-label">// PUNTUÁ ESTE ARTÍCULO</span>
+        <div class="stars">
+          <span class="star" onclick="vote(1)">⭐</span>
+          <span class="star" onclick="vote(2)">⭐</span>
+          <span class="star" onclick="vote(3)">⭐</span>
+          <span class="star" onclick="vote(4)">⭐</span>
+          <span class="star" onclick="vote(5)">⭐</span>
+        </div>
+        <span class="vote-hint" id="voteMsg">Iniciá sesión para votar</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="modalSaveBtn" onclick="toggleSave()">🔖 Guardar</button>
+      <button class="btn-primary" onclick="openOriginal()">Leer artículo original ↗</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div class="auth-overlay" id="authOverlay" onclick="closeAuth(event)">
+  <div class="auth-modal">
+    <div class="auth-logo">TECH<span>NEWS</span></div>
+    <div class="auth-subtitle">Guardá noticias, votá y comentá</div>
+    <button class="btn-google" onclick="fakeLogin()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Continuar con Google
+    </button>
+    <div class="auth-divider"><span>o con email</span></div>
+    <input class="auth-input" type="email" placeholder="tu@email.com">
+    <input class="auth-input" type="password" placeholder="Contraseña">
+    <button class="btn-primary" style="width:100%;padding:0.7rem" onclick="fakeLogin()">Iniciar sesión</button>
+    <div class="auth-toggle">¿No tenés cuenta? <a onclick="fakeLogin()">Registrate</a></div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<button class="chat-btn" onclick="toggleChat()">💬</button>
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-header">
+    <div><div class="chat-title">Asistente TechNews</div><div class="chat-subtitle">Preguntame sobre cualquier noticia</div></div>
+    <button class="modal-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="msg bot"><div class="msg-bubble">¡Hola! Puedo ayudarte a entender las noticias tech de hoy. ¿Qué querés saber?</div></div>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chatInput" placeholder="Preguntá algo..." onkeydown="if(event.key==='Enter')sendMsg()">
+    <button class="chat-send" onclick="sendMsg()">↑</button>
+  </div>
+</div>
+
+<script>
+const articles = [
+  { id:1, title:"Framework Computer Steps Up Their Support For KDE", cat:"OpenSource", score:8, source:"Phoronix", date:"hace 2h", url:"#", summary:"Framework Computer anunció un mayor compromiso con el ecosistema KDE, incluyendo soporte oficial y contribuciones directas al proyecto. Esto representa un paso importante para el hardware open-source.", tags:["#linux","#kde","#opensource","#framework"], detail:{ context:"Framework Computer, conocida por sus laptops modulares y reparables, ha decidido formalizar su apoyo al entorno de escritorio KDE Plasma. Esto incluye pruebas de compatibilidad, reportes de bugs y financiamiento directo a los desarrolladores del proyecto.", points:["Soporte oficial de drivers y firmware para KDE Plasma en todos los modelos Framework","Contribución mensual al fondo de desarrollo de KDE e.V.","Framework incluirá KDE como opción de sistema operativo en su tienda oficial","Los ingenieros de Framework participarán en las conferencias Akademy de KDE"], why:"Es una señal de que el hardware premium puede apostar por ecosistemas open-source sin depender exclusivamente de Ubuntu o Windows. Podría motivar a otros fabricantes a seguir el mismo camino.", related:["Linux","Open Hardware","KDE Plasma","Modular Laptops"] }},
+  { id:2, title:"4 Different Futures for Quantum Computing Converge at Nvidia GTC", cat:"Hardware", score:9, source:"CNET", date:"hace 3h", url:"#", summary:"En la conferencia Nvidia GTC se presentaron cuatro enfoques distintos para el futuro de la computación cuántica, desde qubits superconductores hasta fotónicos.", tags:["#quantum","#nvidia","#computing","#gtc"], detail:{ context:"Nvidia GTC 2026 reunió a las principales empresas de computación cuántica: IBM, Google, IonQ y PsiQuantum. Cada una presentó su roadmap y los avances técnicos de su arquitectura particular.", points:["IBM apuesta por qubits superconductores con su arquitectura Eagle de 433 qubits","Google presenta Willow con corrección de errores cuánticos mejorada un 40%","IonQ demuestra qubits iónicos con fidelidad del 99.9% en operaciones de dos qubits","PsiQuantum afirma que los qubits fotónicos serán los únicos escalables a un millón de qubits"], why:"La convergencia de estos enfoques marca el inicio de la carrera cuántica comercial. En 3-5 años veremos cuál arquitectura domina aplicaciones reales en farmacéutica, finanzas y criptografía.", related:["Quantum Computing","Nvidia GTC","IBM","Google","Criptografía"] }},
+  { id:3, title:"Iranian Hackers Breached Kash Patel's Email", cat:"Security", score:9, source:"Wired", date:"hace 4h", url:"#", summary:"Un grupo de hackers iraníes logró acceder al correo personal de Kash Patel mediante técnicas avanzadas de phishing. El incidente reaviva el debate sobre la seguridad de comunicaciones gubernamentales.", tags:["#cybersecurity","#hacking","#iran","#espionaje"], detail:{ context:"El grupo APT42, vinculado al IRGC iraní, utilizó una campaña de spear-phishing altamente dirigida para comprometer la cuenta personal de Gmail de Kash Patel, actual director del FBI.", points:["Se usaron dominios falsos que imitaban servicios de Google para robar credenciales","El ataque no comprometió sistemas gubernamentales, solo cuentas personales","APT42 es el mismo grupo que atacó campañas políticas en 2024","El FBI abrió una investigación interna sobre el uso de correos personales para asuntos oficiales"], why:"Expone una vulnerabilidad crítica: funcionarios de alto rango usando cuentas personales para asuntos sensibles. Es un patrón repetido que los adversarios explotan sistemáticamente.", related:["APT42","Spear Phishing","FBI","Ciberseguridad Nacional","IRGC"] }},
+  { id:4, title:"Velxio 2.0 — Emulate Arduino, ESP32, and Raspberry Pi 3 in the Browser", cat:"WebDev", score:8, source:"GitHub", date:"hace 5h", url:"#", summary:"Velxio 2.0 permite emular placas de desarrollo como Arduino, ESP32 y Raspberry Pi directamente en el navegador, sin necesidad de hardware físico.", tags:["#arduino","#webdev","#emulation","#iot"], detail:{ context:"Velxio es un proyecto open-source que compila y ejecuta código para microcontroladores directamente en el browser usando WebAssembly. La versión 2.0 agrega soporte para ESP32, Wi-Fi simulado y comunicación serial virtual.", points:["Soporte completo para Arduino UNO, ESP32 y Raspberry Pi 3B+","Simulación de sensores: temperatura, humedad, acelerómetro y GPIOs","Wi-Fi simulado para proyectos IoT sin hardware real","Integración directa con VS Code via extensión","Completamente gratis y open-source bajo licencia MIT"], why:"Democratiza la educación en IoT y sistemas embebidos. Estudiantes y docentes pueden practicar sin comprar hardware, y los desarrolladores pueden prototipar antes de hacer el pedido de componentes.", related:["WebAssembly","IoT","Educación Tech","Arduino","Open Source"] }},
+  { id:5, title:"Apple Giveth, Apple Taketh Away — New AI Features", cat:"AI", score:7, source:"Daring Fireball", date:"hace 6h", url:"#", summary:"Apple presenta nuevas funcionalidades de IA en sus dispositivos mientras elimina otras que no tuvieron buena recepción.", tags:["#apple","#ai","#ios","#siri"], detail:{ context:"En una actualización silenciosa de iOS 19.2, Apple activó nuevas capacidades de Apple Intelligence para usuarios en más regiones, mientras discontinuó la función de resúmenes de notificaciones que generó controversia.", points:["Apple Intelligence llega finalmente a España, México y Argentina en español","Se elimina el resumen automático de notificaciones de noticias tras quejas de imprecisiones","Siri puede ahora ejecutar acciones en apps de terceros sin salir de la conversación","Nueva función de borrador asistido en Mail y Notas con mayor calidad"], why:"Muestra la dificultad de Apple para iterar rápido en IA manteniendo su estándar de calidad. La competencia con Google y Samsung se intensifica en el segmento de IA en dispositivo.", related:["Apple Intelligence","Siri","iOS 19","On-Device AI","LLM"] }},
+  { id:6, title:"Hot sale: All Pixel 10 phones are heavily discounted", cat:"Hardware", score:6, source:"Android Authority", date:"hace 7h", url:"#", summary:"Google ofrece descuentos significativos en toda la línea Pixel 10, con rebajas de hasta el 40% en algunos modelos.", tags:["#google","#pixel","#android","#deals"], detail:{ context:"Google Store y retailers autorizados en EE.UU. están ofreciendo descuentos de entre $150 y $300 en los modelos Pixel 10, 10 Pro y 10 Pro XL. La oferta es válida hasta el 31 de marzo.", points:["Pixel 10 pasa de $699 a $449 (descuento de $250)","Pixel 10 Pro XL baja a $799, su precio más bajo desde el lanzamiento","Incluye $100 adicionales con trade-in de cualquier smartphone","Analistas de Bloomberg esperan el anuncio del Pixel 11 en mayo 2026"], why:"Los descuentos agresivos antes de Q2 típicamente señalan un ciclo de producto terminando. Es el momento ideal para comprar si Tensor G5 es suficiente para tus necesidades.", related:["Google Pixel","Android","Tensor G5","Smartphones","Google Store"] }},
+  { id:7, title:"Quantum firm Xanadu jumps after rollercoaster debut trading", cat:"Business", score:7, source:"Financial Post", date:"hace 8h", url:"#", summary:"La empresa de computación cuántica Xanadu experimentó una volatilidad extrema en su debut bursátil, cerrando con una subida del 23% tras caer un 15%.", tags:["#quantum","#ipo","#trading","#business"], detail:{ context:"Xanadu Quantum Technologies debutó en NASDAQ bajo el ticker XNDU. La empresa canadiense, conocida por su framework PennyLane, captó $240M en su IPO valorándola en $1.8B.", points:["Precio de apertura: $18/acción. Cayó a $15.3 durante la mañana y cerró en $22.1","Volumen de trading 8x superior al estimado por los underwriters","Inversores institucionales como a16z y D1 Capital compraron en la caída","La empresa no es rentable: pérdidas de $45M en 2025 con ingresos de $12M"], why:"El interés inversor en quantum sigue siendo especulativo pero creciente. La volatilidad del debut refleja incertidumbre sobre cuándo llegará la ventaja cuántica comercial real.", related:["NASDAQ","Quantum Computing","IPO","PennyLane","Venture Capital"] }},
+  { id:8, title:"European Commission confirms major data breach affecting 100k users", cat:"Security", score:9, source:"Slashdot", date:"hace 9h", url:"#", summary:"La Comisión Europea confirmó una brecha de seguridad que afectó datos personales de más de 100.000 usuarios.", tags:["#privacy","#breach","#eu","#gdpr"], detail:{ context:"El sistema de gestión de conferencias de la Comisión Europea sufrió una intrusión que expuso nombres, emails, afiliaciones institucionales y en algunos casos números de identificación.", points:["Datos expuestos: nombres, emails institucionales, país de origen y rol en eventos","No se comprometieron contraseñas, documentos clasificados ni datos financieros","El vector de ataque fue una vulnerabilidad en un plugin desactualizado de WordPress","La CE notificará individualmente a todos los afectados según exige el GDPR art. 34"], why:"Una institución que regula la privacidad de datos en Europa no puede permitirse este tipo de fallos. Genera presión política interna y debilita la credibilidad del GDPR como estándar global.", related:["GDPR","Comisión Europea","Data Breach","WordPress","Ciberseguridad"] }},
+  { id:9, title:"I've tested every MacBook Air — here's why the time to upgrade is now", cat:"Hardware", score:7, source:"ZDNet", date:"hace 10h", url:"#", summary:"Tras analizar todas las generaciones de MacBook Air, el veredicto es claro: el modelo con chip M3 ofrece la mejor relación rendimiento-precio de la historia de la línea.", tags:["#macbook","#apple","#m3","#review"], detail:{ context:"El autor comparó los MacBook Air M1, M2 y M3 en tareas reales de desarrollo, edición de video y machine learning local durante 6 semanas. El M3 Air de 15\" con 16GB resultó el punto óptimo.", points:["El M3 Air supera al M2 Pro en cargas de trabajo de un solo núcleo (+18%)","Con 16GB de RAM unificada, corre modelos LLM locales de hasta 8B parámetros con fluidez","Autonomía real: 14.5 horas en uso mixto, mejor que cualquier laptop Windows equivalente","Precio actual con descuentos: $999 para 13\" y $1,199 para 15\" con 16GB"], why:"Con el M4 Air esperado para Q3 2026, el M3 está en su precio mínimo histórico. Para quienes necesitan actualizar hoy, la ecuación rendimiento/precio es difícil de superar.", related:["Apple Silicon","M3","MacOS","Desarrollo","Machine Learning"] }}
+];
+
+let currentArticle = null, savedArticles = new Set(), loggedIn = false, detailExpanded = false;
+
+function renderGrid(filter='all') {
+  const filtered = filter === 'all' ? articles : articles.filter(a => a.cat.toLowerCase().replace(' ','') === filter);
+  document.getElementById('articleGrid').innerHTML = filtered.map(a => `
+    <div class="card ${a.cat.toLowerCase().replace(' ','')}" onclick="openModal(${a.id})">
+      <div class="card-header">
+        <span class="cat-tag ${a.cat}">${a.cat}</span>
+        <span class="score-badge ${a.score>=8?'score-high':''}">▲${a.score}/10</span>
+      </div>
+      <div class="card-title">${a.title}</div>
+      <div class="card-summary">${a.summary}</div>
+      <div class="card-tags">${a.tags.slice(0,3).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      <div class="card-footer">
+        <div class="source-info"><span>${a.source}</span> · ${a.date}</div>
+        <div class="card-actions"><button class="icon-btn" onclick="event.stopPropagation();quickSave(${a.id})">🔖</button></div>
+      </div>
+    </div>`).join('');
+}
+
+function openModal(id) {
+  const a = articles.find(x => x.id === id);
+  currentArticle = a; detailExpanded = false;
+  document.getElementById('modalCat').textContent = a.cat;
+  document.getElementById('modalCat').className = `cat-tag ${a.cat}`;
+  document.getElementById('modalScore').textContent = `▲${a.score}/10`;
+  document.getElementById('modalTitle').textContent = a.title;
+  document.getElementById('modalSummary').textContent = a.summary;
+  document.getElementById('modalSource').textContent = a.source;
+  document.getElementById('modalDate').textContent = a.date;
+  document.getElementById('modalTags').innerHTML = a.tags.map(t=>`<span class="modal-tag">${t}</span>`).join('');
+  document.getElementById('modalSaveBtn').textContent = savedArticles.has(a.id) ? '✅ Guardado' : '🔖 Guardar';
+  document.getElementById('voteMsg').textContent = loggedIn ? 'Tu voto importa' : 'Iniciá sesión para votar';
+  document.getElementById('detailContext').textContent = a.detail.context;
+  document.getElementById('detailPoints').innerHTML = a.detail.points.map(p=>`<li>${p}</li>`).join('');
+  document.getElementById('detailWhy').textContent = a.detail.why;
+  document.getElementById('detailRelated').innerHTML = a.detail.related.map(r=>`<span class="detail-pill">${r}</span>`).join('');
+  document.getElementById('modalDetail').classList.remove('open');
+  document.getElementById('btnExpand').classList.remove('open');
+  document.getElementById('btnExpand').innerHTML = '<span class="arrow">▾</span>&nbsp;Expandir detalle';
+  document.getElementById('modal').classList.remove('expanded');
+  document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function toggleExpand() {
+  detailExpanded = !detailExpanded;
+  document.getElementById('modalDetail').classList.toggle('open', detailExpanded);
+  document.getElementById('btnExpand').classList.toggle('open', detailExpanded);
+  document.getElementById('modal').classList.toggle('expanded', detailExpanded);
+  document.getElementById('btnExpand').innerHTML = detailExpanded
+    ? '<span class="arrow" style="transform:rotate(180deg);display:inline-block">▾</span>&nbsp;Contraer detalle'
+    : '<span class="arrow">▾</span>&nbsp;Expandir detalle';
+}
+
+function closeModalOutside(e) { if(e.target===document.getElementById('modalOverlay')) closeModalDirect(); }
+function closeModalDirect() { document.getElementById('modalOverlay').classList.remove('open'); }
+function openOriginal() { if(currentArticle) window.open(currentArticle.url,'_blank'); }
+function toggleSave() {
+  if(!loggedIn){openAuth();return;}
+  if(!currentArticle)return;
+  if(savedArticles.has(currentArticle.id)){savedArticles.delete(currentArticle.id);document.getElementById('modalSaveBtn').textContent='🔖 Guardar';}
+  else{savedArticles.add(currentArticle.id);document.getElementById('modalSaveBtn').textContent='✅ Guardado';}
+  renderGrid();
+}
+function quickSave(id){if(!loggedIn){openAuth();return;}if(savedArticles.has(id))savedArticles.delete(id);else savedArticles.add(id);renderGrid();}
+function vote(n){if(!loggedIn){openAuth();return;}document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('active',i<n));document.getElementById('voteMsg').textContent=`Votaste ${n}/5 ⭐`;}
+function filterCat(btn,cat){document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderGrid(cat);}
+function openAuth(){document.getElementById('authOverlay').classList.add('open');}
+function closeAuth(e){if(e.target===document.getElementById('authOverlay'))document.getElementById('authOverlay').classList.remove('open');}
+function fakeLogin(){loggedIn=true;document.getElementById('authOverlay').classList.remove('open');document.querySelector('.btn-login').style.display='none';document.querySelector('.btn-signup').style.display='none';document.getElementById('userAvatar').style.display='flex';}
+function toggleChat(){document.getElementById('chatPanel').classList.toggle('open');}
+function sendMsg(){const input=document.getElementById('chatInput');const msg=input.value.trim();if(!msg)return;const msgs=document.getElementById('chatMessages');msgs.innerHTML+=`<div class="msg user"><div class="msg-bubble">${msg}</div></div>`;input.value='';setTimeout(()=>{msgs.innerHTML+=`<div class="msg bot"><div class="msg-bubble">Analizando noticias... 🤖</div></div>`;msgs.scrollTop=msgs.scrollHeight;},800);msgs.scrollTop=msgs.scrollHeight;}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModalDirect();document.getElementById('authOverlay').classList.remove('open');}});
+renderGrid();
+</script>
+</body>
+</html>

@@ -1,65 +1,75 @@
-import Image from "next/image";
+import { Suspense } from 'react'
+import { createClient } from '@/lib/supabase/server'
+import ArticleFeed from '@/components/articles/ArticleFeed'
+import CategoryFilter from '@/components/articles/CategoryFilter'
 
-export default function Home() {
+const PAGE_SIZE = 20
+
+interface HomeProps {
+  searchParams: Promise<{ category?: string; page?: string }>
+}
+
+export default async function Home({ searchParams }: HomeProps) {
+  const { category, page } = await searchParams
+  const currentPage = Math.max(1, parseInt(page ?? '1', 10) || 1)
+
+  const supabase = await createClient()
+  let countQuery = supabase.from('articles').select('*', { count: 'exact', head: true })
+  if (category) countQuery = countQuery.eq('category', category)
+  const { count } = await countQuery
+  const total = count ?? 0
+  const totalPages = Math.ceil(total / PAGE_SIZE)
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      {/* Live strip */}
+      <div style={{
+        background: 'linear-gradient(90deg, rgba(232,255,71,0.05), transparent)',
+        borderBottom: '1px solid var(--border)',
+        padding: '0.6rem 2rem',
+      }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span style={{
+            background: 'var(--accent)', color: '#0a0a0f',
+            fontFamily: "'JetBrains Mono', monospace", fontSize: '0.65rem',
+            fontWeight: 500, letterSpacing: 1, padding: '0.2rem 0.5rem', borderRadius: 3,
+          }}>LIVE</span>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            <span style={{ color: 'var(--text)' }}>{total} artículos</span> enriquecidos con IA
+            {category && <> · Filtrando por <span style={{ color: 'var(--text)' }}>{category}</span></>}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+
+      {/* Main content */}
+      <main style={{ maxWidth: 1400, margin: '0 auto', padding: '2rem' }}>
+        {/* Category filter */}
+        <Suspense fallback={null}>
+          <CategoryFilter />
+        </Suspense>
+
+        {/* Section header */}
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+          marginBottom: '1.5rem',
+        }}>
+          <h2 style={{
+            fontFamily: "'Bebas Neue', sans-serif", fontSize: '1.4rem',
+            letterSpacing: 1, color: 'var(--text)', margin: 0,
+          }}>
+            ÚLTIMAS NOTICIAS
+          </h2>
+          <span style={{
+            fontSize: '0.8rem', color: 'var(--text-muted)',
+            fontFamily: "'JetBrains Mono', monospace",
+          }}>
+            {total} artículos · página {currentPage}/{totalPages || 1}
+          </span>
         </div>
+
+        {/* Feed */}
+        <ArticleFeed category={category} page={currentPage} />
       </main>
-    </div>
-  );
+    </>
+  )
 }

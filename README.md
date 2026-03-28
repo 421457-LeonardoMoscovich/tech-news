@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TechNews
 
-## Getting Started
+Agregador de noticias tech enriquecidas con IA. Scraping automático via NewsAPI, análisis y categorización con Groq (llama-3.3-70b), y chat de asistente en tiempo real.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Frontend**: Next.js 16 (App Router), TypeScript, CSS variables
+- **Backend**: Supabase (Postgres + Auth + RLS)
+- **IA**: Groq SDK — llama-3.3-70b-versatile
+- **Scraping**: NewsAPI
+- **Deploy**: Vercel
+
+## Variables de entorno
+
+Crear `.env.local` con:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+GROQ_API_KEY=
+NEWS_API_KEY=
+CRON_SECRET=          # string aleatorio, ej: openssl rand -hex 32
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Las mismas variables deben estar configuradas en **Vercel → Settings → Environment Variables**.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scraping automático
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+El scraping corre de dos formas:
 
-## Learn More
+| Scheduler | Frecuencia | Configuración |
+|-----------|-----------|---------------|
+| Vercel Cron (plan Hobby) | 1× día a las 9:00 UTC | `vercel.json` |
+| GitHub Actions | Cada 6 horas | `.github/workflows/scrape.yml` |
 
-To learn more about Next.js, take a look at the following resources:
+### Configurar GitHub Actions
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Ir a **GitHub → Settings → Secrets and variables → Actions**
+2. Agregar secret: `CRON_SECRET` con el mismo valor que en Vercel
+3. Verificar que la URL en `.github/workflows/scrape.yml` sea la correcta:
+   ```
+   https://tech-news.vercel.app/api/scrape   ← reemplazar si la URL es distinta
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+El workflow también se puede disparar manualmente desde la pestaña **Actions** de GitHub.
 
-## Deploy on Vercel
+## DB migrations
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Ejecutar en **Supabase → SQL Editor** antes del primer deploy:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```sql
+-- Campos para el modal expandido (nivel 2)
+alter table articles add column if not exists context text;
+alter table articles add column if not exists key_points text[];
+alter table articles add column if not exists why_it_matters text;
+alter table articles add column if not exists related_topics text[];
+```
+
+El archivo completo está en `database/add-detail-fields.sql`.
+
+## Desarrollo local
+
+```bash
+npm install
+npm run dev
+```
