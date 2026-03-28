@@ -52,7 +52,7 @@ export default async function ArticleFeed({ category, page = 1, q }: ArticleFeed
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+      <div className="feed-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
         {articles.map((article) => (
           <ArticleCard key={article.id} article={article} />
         ))}

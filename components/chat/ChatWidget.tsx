@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import type { ChatMessage } from '@/types'
+import { useIsMobile } from '@/lib/hooks/useIsMobile'
 
 const INITIAL_MESSAGE: ChatMessage = {
   role: 'assistant',
@@ -9,6 +10,7 @@ const INITIAL_MESSAGE: ChatMessage = {
 }
 
 export default function ChatWidget() {
+  const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE])
   const [input, setInput] = useState('')
@@ -67,7 +69,7 @@ export default function ChatWidget() {
         onClick={() => setOpen((o) => !o)}
         title="Chat con IA"
         style={{
-          position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 150,
+          position: 'fixed', bottom: isMobile ? '1rem' : '2rem', right: isMobile ? '1rem' : '2rem', zIndex: 150,
           width: 52, height: 52, borderRadius: '50%',
           background: 'var(--accent)', border: 'none',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -83,9 +85,15 @@ export default function ChatWidget() {
       {/* Chat panel */}
       {open && (
         <div style={{
-          position: 'fixed', bottom: '5.5rem', right: '2rem', zIndex: 150,
-          width: 340, background: 'var(--surface)', border: '1px solid var(--border)',
-          borderRadius: 16, display: 'flex', flexDirection: 'column',
+          position: 'fixed',
+          bottom: isMobile ? 0 : '5.5rem',
+          right: isMobile ? 0 : '2rem',
+          left: isMobile ? 0 : 'auto',
+          zIndex: 150,
+          width: isMobile ? '100%' : 340,
+          background: 'var(--surface)', border: '1px solid var(--border)',
+          borderRadius: isMobile ? '16px 16px 0 0' : 16,
+          display: 'flex', flexDirection: 'column',
           boxShadow: '0 16px 64px rgba(0,0,0,0.5)',
           animation: 'slideUp 0.2s ease',
         }}>
@@ -115,7 +123,7 @@ export default function ChatWidget() {
           {/* Messages */}
           <div style={{
             padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem',
-            minHeight: 200, maxHeight: 300, overflowY: 'auto',
+            minHeight: 200, maxHeight: isMobile ? 'calc(70dvh - 120px)' : 300, overflowY: 'auto',
           }}>
             {messages.map((msg, i) => (
               <div key={i} style={{

@@ -22,7 +22,7 @@ export default async function SavedPage() {
     .filter(Boolean) as Article[]
 
   return (
-    <main style={{ maxWidth: 1400, margin: '0 auto', padding: '2rem' }}>
+    <main className="page-main" style={{ maxWidth: 1400, margin: '0 auto', padding: '2rem' }}>
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
         marginBottom: '1.5rem',

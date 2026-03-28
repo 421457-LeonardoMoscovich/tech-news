@@ -5,13 +5,16 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 import AuthModal from '@/components/auth/AuthModal'
+import { useIsMobile } from '@/lib/hooks/useIsMobile'
 
 export default function Header() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [authOpen, setAuthOpen] = useState(false)
   const [query, setQuery] = useState('')
+  const isMobile = useIsMobile()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const [displayName, setDisplayName] = useState<string | null>(null)
   const [avatarColor, setAvatarColor] = useState<string | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -75,7 +78,7 @@ export default function Header() {
 
   return (
     <>
-      <header style={{
+      <header className="page-header" style={{
         position: 'sticky', top: 0, zIndex: 100,
         background: 'rgba(10,10,15,0.92)',
         backdropFilter: 'blur(20px)',
@@ -84,40 +87,55 @@ export default function Header() {
       }}>
         <div style={{
           maxWidth: 1400, margin: '0 auto',
-          display: 'flex', alignItems: 'center', gap: '2rem', height: 64,
+          display: 'flex', alignItems: 'center', gap: isMobile ? '0.75rem' : '2rem',
+          height: isMobile ? 56 : 64,
         }}>
           {/* Logo */}
           <a href="/" style={{
             fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: '1.8rem', letterSpacing: 2,
+            fontSize: isMobile ? '1.4rem' : '1.8rem', letterSpacing: 2,
             color: 'var(--accent)', textDecoration: 'none', flexShrink: 0,
           }}>
             TECH<span style={{ color: 'var(--text)' }}>NEWS</span>
           </a>
 
-          {/* Search */}
-          <div style={{
-            flex: 1, maxWidth: 400, display: 'flex', alignItems: 'center', gap: '0.5rem',
-            background: 'var(--surface2)', border: '1px solid var(--border)',
-            borderRadius: 8, padding: '0.5rem 1rem', transition: 'border-color 0.2s',
-          }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
-            onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
-          >
-            <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>🔍</span>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleSearch}
-              placeholder="Buscar artículos, tecnologías, temas..."
+          {/* Search — desktop only inline, mobile toggleable */}
+          {!isMobile && (
+            <div style={{
+              flex: 1, maxWidth: 400, display: 'flex', alignItems: 'center', gap: '0.5rem',
+              background: 'var(--surface2)', border: '1px solid var(--border)',
+              borderRadius: 8, padding: '0.5rem 1rem', transition: 'border-color 0.2s',
+            }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+              onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
+            >
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>🔍</span>
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleSearch}
+                placeholder="Buscar artículos, tecnologías, temas..."
+                style={{
+                  background: 'none', border: 'none', outline: 'none',
+                  color: 'var(--text)', fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '0.875rem', width: '100%',
+                }}
+              />
+            </div>
+          )}
+
+          {/* Mobile search icon */}
+          {isMobile && (
+            <button
+              onClick={() => setSearchOpen((o) => !o)}
               style={{
-                background: 'none', border: 'none', outline: 'none',
-                color: 'var(--text)', fontFamily: "'DM Sans', sans-serif",
-                fontSize: '0.875rem', width: '100%',
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: searchOpen ? 'var(--accent)' : 'var(--text-muted)',
+                fontSize: '1.1rem', padding: '0.25rem',
               }}
-            />
-          </div>
+            >🔍</button>
+          )}
 
           {/* Actions */}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -132,7 +150,7 @@ export default function Header() {
                   onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
                   onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
                 >
-                  🔖 Guardados
+                  {isMobile ? '🔖' : '🔖 Guardados'}
                 </a>
 
                 {/* Avatar + dropdown */}
@@ -237,8 +255,9 @@ export default function Header() {
                     e.currentTarget.style.color = 'var(--text-muted)'
                   }}
                 >
-                  Iniciar sesión
+                  {isMobile ? '→' : 'Iniciar sesión'}
                 </button>
+                {!isMobile && (
                 <button
                   onClick={() => setAuthOpen(true)}
                   style={{
@@ -249,10 +268,37 @@ export default function Header() {
                 >
                   Registrarse
                 </button>
+                )}
               </>
             )}
           </div>
         </div>
+
+        {/* Mobile search bar — expandible */}
+        {isMobile && searchOpen && (
+          <div style={{
+            padding: '0.5rem 0', borderTop: '1px solid var(--border)',
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            background: 'var(--surface2)', borderRadius: 8,
+            margin: '0 0 0.5rem',
+            paddingLeft: '0.75rem', paddingRight: '0.75rem',
+          }}>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>🔍</span>
+            <input
+              autoFocus
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => { handleSearch(e); if (e.key === 'Enter') setSearchOpen(false) }}
+              placeholder="Buscar artículos..."
+              style={{
+                flex: 1, background: 'none', border: 'none', outline: 'none',
+                color: 'var(--text)', fontFamily: "'DM Sans', sans-serif",
+                fontSize: '0.9rem', padding: '0.4rem 0',
+              }}
+            />
+          </div>
+        )}
       </header>
 
       {authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}

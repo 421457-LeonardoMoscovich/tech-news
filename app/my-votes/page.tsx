@@ -36,7 +36,7 @@ export default async function MyVotesPage() {
   for (const e of entries) byScore[e.value]?.push(e)
 
   return (
-    <main style={{ maxWidth: 1100, margin: '0 auto', padding: '2rem' }}>
+    <main className="page-main" style={{ maxWidth: 1100, margin: '0 auto', padding: '2rem' }}>
       {/* Header */}
       <div style={{ marginBottom: '0.75rem' }}>
         <a href="/" style={{

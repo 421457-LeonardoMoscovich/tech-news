@@ -47,7 +47,7 @@ export default async function Home({ searchParams }: HomeProps) {
       </div>
 
       {/* Main content */}
-      <main style={{ maxWidth: 1400, margin: '0 auto', padding: '2rem' }}>
+      <main className="page-main" style={{ maxWidth: 1400, margin: '0 auto', padding: '2rem' }}>
         {/* Category filter */}
         <Suspense fallback={null}>
           <CategoryFilter />

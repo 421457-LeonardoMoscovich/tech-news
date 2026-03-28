@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Article } from '@/types'
 import AuthModal from '@/components/auth/AuthModal'
+import { useIsMobile } from '@/lib/hooks/useIsMobile'
 
 const CAT_COLORS: Record<string, string> = {
   AI:         'var(--cat-ai)',
@@ -28,6 +29,7 @@ function formatDate(d: string | null) {
 }
 
 export default function ArticleModal({ article, onClose, onRead }: { article: Article; onClose: () => void; onRead?: () => void }) {
+  const isMobile = useIsMobile()
   const [expanded, setExpanded] = useState(false)
   const [hoverStar, setHoverStar] = useState(0)
   const [selectedStar, setSelectedStar] = useState(0)   // estrella hover/seleccionada antes de confirmar
@@ -135,17 +137,18 @@ export default function ArticleModal({ article, onClose, onRead }: { article: Ar
         style={{
           position: 'fixed', inset: 0, zIndex: 200,
           background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem',
+          display: 'flex', alignItems: isMobile ? 'flex-end' : 'center',
+          justifyContent: 'center', padding: isMobile ? 0 : '2rem',
         }}
       >
         <div
           onClick={(e) => e.stopPropagation()}
           style={{
             background: 'var(--surface)', border: '1px solid var(--border)',
-            borderRadius: 16, width: '100%',
-            maxWidth: expanded ? 820 : 680,
-            maxHeight: '88vh', overflowY: 'auto',
-            animation: 'slideUp 0.25s ease',
+            borderRadius: isMobile ? '16px 16px 0 0' : 16, width: '100%',
+            maxWidth: isMobile ? '100%' : (expanded ? 820 : 680),
+            maxHeight: isMobile ? '92dvh' : '88vh', overflowY: 'auto',
+            animation: isMobile ? 'slideUp 0.3s ease' : 'slideUp 0.25s ease',
             transition: 'max-width 0.35s ease',
           }}
         >
