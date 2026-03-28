@@ -34,6 +34,9 @@ export default function ArticleModal({ article, onClose }: { article: Article; o
   const [saved, setSaved] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [user, setUser] = useState<{ id: string } | null>(null)
+  const [comments, setComments] = useState<{ id: string; body: string; created_at: string; user_id: string }[]>([])
+  const [commentInput, setCommentInput] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   const cat = article.category ?? ''
   const catColor = CAT_COLORS[cat] ?? 'var(--text-muted)'
@@ -43,6 +46,9 @@ export default function ArticleModal({ article, onClose }: { article: Article; o
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data }) => setUser(data.user ? { id: data.user.id } : null))
+    fetch(`/api/articles/comments?article_id=${article.id}`)
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setComments(data) })
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
@@ -50,7 +56,33 @@ export default function ArticleModal({ article, onClose }: { article: Article; o
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
     }
-  }, [onClose])
+  }, [onClose, article.id])
+
+  async function handleComment() {
+    if (!user) { setAuthOpen(true); return }
+    if (!commentInput.trim() || submitting) return
+    setSubmitting(true)
+    const res = await fetch('/api/articles/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ article_id: article.id, body: commentInput.trim() }),
+    })
+    if (res.ok) {
+      const comment = await res.json()
+      setComments((prev) => [...prev, comment])
+      setCommentInput('')
+    }
+    setSubmitting(false)
+  }
+
+  async function handleDeleteComment(comment_id: string) {
+    await fetch('/api/articles/comments', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ comment_id }),
+    })
+    setComments((prev) => prev.filter((c) => c.id !== comment_id))
+  }
 
   async function handleVote(value: number) {
     if (!user) { setAuthOpen(true); return }
@@ -282,6 +314,98 @@ export default function ArticleModal({ article, onClose }: { article: Article; o
                 {user ? (userVote ? `Votaste ${userVote}/5` : 'Seleccioná una puntuación') : 'Iniciá sesión para votar'}
               </span>
             </div>
+
+            {/* Comments */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace" }}>
+                // COMENTARIOS ({comments.length})
+              </span>
+
+              {comments.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                  {comments.map((c) => (
+                    <div key={c.id} style={{
+                      display: 'flex', gap: '0.65rem', alignItems: 'flex-start',
+                      padding: '0.65rem 0.85rem', background: 'var(--surface2)',
+                      borderRadius: 8, border: '1px solid var(--border)',
+                    }}>
+                      <div style={{
+                        width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                        background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '0.65rem', fontWeight: 700, color: '#0a0a0f',
+                      }}>
+                        {c.user_id.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text)', lineHeight: 1.5, wordBreak: 'break-word' }}>{c.body}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.25rem', fontFamily: "'JetBrains Mono', monospace" }}>
+                          {new Intl.DateTimeFormat('es', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(c.created_at))}
+                        </div>
+                      </div>
+                      {user?.id === c.user_id && (
+                        <button
+                          onClick={() => handleDeleteComment(c.id)}
+                          style={{
+                            background: 'none', border: 'none', color: 'var(--text-muted)',
+                            cursor: 'pointer', fontSize: '0.75rem', padding: '0.15rem 0.3rem',
+                            borderRadius: 4, transition: 'color 0.15s', flexShrink: 0,
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--cat-security)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+                          title="Eliminar comentario"
+                        >✕</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {user ? (
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input
+                    value={commentInput}
+                    onChange={(e) => setCommentInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleComment() } }}
+                    placeholder="Escribí un comentario..."
+                    style={{
+                      flex: 1, background: 'var(--surface2)', border: '1px solid var(--border)',
+                      borderRadius: 8, padding: '0.5rem 0.85rem', color: 'var(--text)',
+                      fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem', outline: 'none',
+                    }}
+                    onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+                    onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
+                  />
+                  <button
+                    onClick={handleComment}
+                    disabled={submitting || !commentInput.trim()}
+                    style={{
+                      background: 'var(--accent)', border: 'none', color: '#0a0a0f',
+                      padding: '0.5rem 1rem', borderRadius: 8, cursor: 'pointer',
+                      fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.85rem',
+                      opacity: submitting || !commentInput.trim() ? 0.5 : 1, transition: 'opacity 0.15s',
+                    }}
+                  >
+                    {submitting ? '...' : 'Enviar'}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setAuthOpen(true)}
+                  style={{
+                    background: 'none', border: '1px dashed var(--border)',
+                    color: 'var(--text-muted)', padding: '0.5rem 1rem', borderRadius: 8,
+                    cursor: 'pointer', fontSize: '0.82rem', fontFamily: "'DM Sans', sans-serif",
+                    transition: 'all 0.15s', alignSelf: 'flex-start',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                >
+                  Iniciá sesión para comentar
+                </button>
+              )}
+            </div>
+
           </div>
 
           {/* Actions */}
