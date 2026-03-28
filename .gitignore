@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# sensitive / temp
+token.txt
+*.swp
+*:Zone.Identifier
+screenshots/

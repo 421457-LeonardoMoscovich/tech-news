@@ -7,14 +7,19 @@ const PAGE_SIZE = 20
 interface ArticleFeedProps {
   category?: string
   page?: number
+  q?: string
 }
 
-export default async function ArticleFeed({ category, page = 1 }: ArticleFeedProps) {
+export default async function ArticleFeed({ category, page = 1, q }: ArticleFeedProps) {
   const supabase = await createClient()
   const offset = (page - 1) * PAGE_SIZE
 
+  const cats = category?.includes(',') ? category.split(',') : null
+
   let countQuery = supabase.from('articles').select('*', { count: 'exact', head: true })
-  if (category) countQuery = countQuery.eq('category', category)
+  if (cats) countQuery = countQuery.in('category', cats)
+  else if (category) countQuery = countQuery.eq('category', category)
+  if (q) countQuery = countQuery.or(`title.ilike.%${q}%,summary.ilike.%${q}%`)
   const { count } = await countQuery
 
   let query = supabase
@@ -22,7 +27,9 @@ export default async function ArticleFeed({ category, page = 1 }: ArticleFeedPro
     .order('relevance_score', { ascending: false })
     .order('created_at', { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1)
-  if (category) query = query.eq('category', category)
+  if (cats) query = query.in('category', cats)
+  else if (category) query = query.eq('category', category)
+  if (q) query = query.or(`title.ilike.%${q}%,summary.ilike.%${q}%`)
   const { data: articles, error } = await query
 
   if (error) {
@@ -36,6 +43,7 @@ export default async function ArticleFeed({ category, page = 1 }: ArticleFeedPro
   const buildHref = (p: number) => {
     const params = new URLSearchParams()
     if (category) params.set('category', category)
+    if (q) params.set('q', q)
     if (p > 1) params.set('page', String(p))
     const qs = params.toString()
     return qs ? `/?${qs}` : '/'

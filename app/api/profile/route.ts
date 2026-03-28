@@ -8,7 +8,7 @@ export async function GET() {
 
   const { data } = await supabase
     .from('profiles')
-    .select('display_name, bio, avatar_color')
+    .select('display_name, bio, avatar_color, favorite_categories')
     .eq('id', user.id)
     .single()
 
@@ -20,11 +20,11 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { display_name, bio, avatar_color } = await request.json()
+  const { display_name, bio, avatar_color, favorite_categories } = await request.json()
 
   const { error } = await supabase
     .from('profiles')
-    .upsert({ id: user.id, display_name, bio, avatar_color }, { onConflict: 'id' })
+    .upsert({ id: user.id, display_name, bio, avatar_color, favorite_categories }, { onConflict: 'id' })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })

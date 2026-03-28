@@ -4,6 +4,15 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+const CATEGORIES = [
+  { id: 'AI',         label: 'AI',         color: 'var(--cat-ai)' },
+  { id: 'WebDev',     label: 'WebDev',     color: 'var(--cat-webdev)' },
+  { id: 'Security',   label: 'Security',   color: 'var(--cat-security)' },
+  { id: 'OpenSource', label: 'OpenSource', color: 'var(--cat-opensource)' },
+  { id: 'Hardware',   label: 'Hardware',   color: 'var(--cat-hardware)' },
+  { id: 'Business',   label: 'Business',   color: 'var(--cat-business)' },
+]
+
 const AVATAR_COLORS = [
   'linear-gradient(135deg, #a78bfa, #e8ff47)',
   'linear-gradient(135deg, #34d399, #60a5fa)',
@@ -21,6 +30,7 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState('')
   const [bio, setBio] = useState('')
   const [avatarColor, setAvatarColor] = useState(AVATAR_COLORS[0])
+  const [favCategories, setFavCategories] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -34,6 +44,7 @@ export default function ProfilePage() {
       if (data.display_name) setDisplayName(data.display_name)
       if (data.bio) setBio(data.bio)
       if (data.avatar_color) setAvatarColor(data.avatar_color)
+      if (Array.isArray(data.favorite_categories)) setFavCategories(data.favorite_categories)
     })
   }, [router])
 
@@ -43,7 +54,7 @@ export default function ProfilePage() {
     await fetch('/api/profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ display_name: displayName.trim() || null, bio: bio.trim() || null, avatar_color: avatarColor }),
+      body: JSON.stringify({ display_name: displayName.trim() || null, bio: bio.trim() || null, avatar_color: avatarColor, favorite_categories: favCategories }),
     })
     setSaving(false)
     setSaved(true)
@@ -155,6 +166,40 @@ export default function ProfilePage() {
           />
           <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'right', marginTop: '0.25rem', fontFamily: "'JetBrains Mono', monospace" }}>
             {bio.length}/160
+          </div>
+        </div>
+
+        {/* Categorías favoritas */}
+        <div>
+          <label style={{ fontSize: '0.75rem', fontFamily: "'JetBrains Mono', monospace", color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+            // CATEGORÍAS FAVORITAS
+          </label>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.65rem' }}>
+            Aparecerán en un tab "Para vos" en el feed principal.
+          </p>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {CATEGORIES.map((cat) => {
+              const active = favCategories.includes(cat.id)
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setFavCategories((prev) =>
+                    active ? prev.filter((c) => c !== cat.id) : [...prev, cat.id]
+                  )}
+                  style={{
+                    padding: '0.3rem 0.85rem', borderRadius: 20,
+                    border: `1px solid ${active ? cat.color : 'var(--border)'}`,
+                    background: active ? `${cat.color}22` : 'var(--surface2)',
+                    color: active ? cat.color : 'var(--text-muted)',
+                    fontSize: '0.78rem', fontFamily: "'JetBrains Mono', monospace",
+                    cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                >
+                  {active ? '✓ ' : ''}{cat.label}
+                </button>
+              )
+            })}
           </div>
         </div>
 

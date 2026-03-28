@@ -27,7 +27,7 @@ function formatDate(d: string | null) {
   return new Intl.DateTimeFormat('es', { dateStyle: 'long' }).format(new Date(d))
 }
 
-export default function ArticleModal({ article, onClose }: { article: Article; onClose: () => void }) {
+export default function ArticleModal({ article, onClose, onRead }: { article: Article; onClose: () => void; onRead?: () => void }) {
   const [expanded, setExpanded] = useState(false)
   const [hoverStar, setHoverStar] = useState(0)
   const [userVote, setUserVote] = useState(0)
@@ -37,6 +37,8 @@ export default function ArticleModal({ article, onClose }: { article: Article; o
   const [comments, setComments] = useState<{ id: string; body: string; created_at: string; user_id: string }[]>([])
   const [commentInput, setCommentInput] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [related, setRelated] = useState<Article[]>([])
+  const [relatedArticle, setRelatedArticle] = useState<Article | null>(null)
 
   const cat = article.category ?? ''
   const catColor = CAT_COLORS[cat] ?? 'var(--text-muted)'
@@ -46,9 +48,21 @@ export default function ArticleModal({ article, onClose }: { article: Article; o
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data }) => setUser(data.user ? { id: data.user.id } : null))
+    try {
+      const ids: string[] = JSON.parse(localStorage.getItem('read_articles') ?? '[]')
+      if (!ids.includes(article.id)) {
+        localStorage.setItem('read_articles', JSON.stringify([...ids, article.id]))
+      }
+      onRead?.()
+    } catch { /* ignore */ }
     fetch(`/api/articles/comments?article_id=${article.id}`)
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setComments(data) })
+    if (article.category) {
+      fetch(`/api/articles/related?article_id=${article.id}&category=${encodeURIComponent(article.category)}`)
+        .then((r) => r.json())
+        .then((data) => { if (Array.isArray(data)) setRelated(data) })
+    }
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
@@ -279,6 +293,33 @@ export default function ArticleModal({ article, onClose }: { article: Article; o
                   </div>
                 )}
 
+                {related.length > 0 && (
+                  <div>
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.7rem', letterSpacing: 1, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                      // Artículos relacionados
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      {related.map((r) => (
+                        <button
+                          key={r.id}
+                          onClick={() => setRelatedArticle(r)}
+                          style={{
+                            background: 'var(--surface2)', border: '1px solid var(--border)',
+                            borderRadius: 8, padding: '0.55rem 0.85rem',
+                            textAlign: 'left', cursor: 'pointer', transition: 'border-color 0.15s',
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
+                        >
+                          <span style={{ fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.4 }}>{r.title}</span>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: "'JetBrains Mono', monospace", flexShrink: 0 }}>{r.relevance_score}/10</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div style={{
                   fontSize: '0.8rem', color: 'var(--text-muted)',
                   padding: '0.75rem 1rem', background: 'var(--surface2)',
@@ -444,6 +485,7 @@ export default function ArticleModal({ article, onClose }: { article: Article; o
         </div>
       </div>
 
+      {relatedArticle && <ArticleModal article={relatedArticle} onClose={() => setRelatedArticle(null)} />}
       {authOpen && <AuthModal onClose={() => setAuthOpen(false)} />}
 
       <style>{`@keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }`}</style>

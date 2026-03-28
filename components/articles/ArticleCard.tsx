@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Article } from '@/types'
 import ArticleModal from './ArticleModal'
 
@@ -35,6 +35,19 @@ function relativeTime(dateStr: string | null): string {
 export default function ArticleCard({ article }: { article: Article }) {
   const [open, setOpen] = useState(false)
   const [hovered, setHovered] = useState(false)
+  const [read, setRead] = useState(false)
+
+  useEffect(() => {
+    try {
+      const ids: string[] = JSON.parse(localStorage.getItem('read_articles') ?? '[]')
+      setRead(ids.includes(article.id))
+    } catch { /* ignore */ }
+  }, [article.id])
+
+  function handleOpen() {
+    setOpen(true)
+    setRead(true)
+  }
 
   const cat = article.category ?? ''
   const catColor = CAT_COLORS[cat] ?? 'var(--text-muted)'
@@ -46,13 +59,14 @@ export default function ArticleCard({ article }: { article: Article }) {
       <article
         role="button"
         tabIndex={0}
-        onClick={() => setOpen(true)}
-        onKeyDown={(e) => e.key === 'Enter' && setOpen(true)}
+        onClick={handleOpen}
+        onKeyDown={(e) => e.key === 'Enter' && handleOpen()}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
           background: 'var(--surface)',
           border: '1px solid var(--border)',
+          opacity: read ? 0.65 : 1,
           borderRadius: 12,
           padding: '1.25rem',
           cursor: 'pointer',
@@ -66,6 +80,16 @@ export default function ArticleCard({ article }: { article: Article }) {
           boxShadow: hovered ? '0 8px 32px rgba(0,0,0,0.4)' : 'none',
         }}
       >
+        {/* Read badge */}
+        {read && (
+          <div style={{
+            position: 'absolute', top: 10, right: 10,
+            fontSize: '0.65rem', fontFamily: "'JetBrains Mono', monospace",
+            color: 'var(--text-muted)', background: 'var(--surface2)',
+            border: '1px solid var(--border)', padding: '0.1rem 0.4rem', borderRadius: 4,
+          }}>✓ leído</div>
+        )}
+
         {/* Top accent bar */}
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, height: 2,
@@ -153,7 +177,7 @@ export default function ArticleCard({ article }: { article: Article }) {
         </div>
       </article>
 
-      {open && <ArticleModal article={article} onClose={() => setOpen(false)} />}
+      {open && <ArticleModal article={article} onClose={() => setOpen(false)} onRead={() => setRead(true)} />}
     </>
   )
 }

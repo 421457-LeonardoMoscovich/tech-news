@@ -2,20 +2,24 @@ import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import ArticleFeed from '@/components/articles/ArticleFeed'
 import CategoryFilter from '@/components/articles/CategoryFilter'
+import TrendingStrip from '@/components/articles/TrendingStrip'
 
 const PAGE_SIZE = 20
 
 interface HomeProps {
-  searchParams: Promise<{ category?: string; page?: string }>
+  searchParams: Promise<{ category?: string; page?: string; q?: string }>
 }
 
 export default async function Home({ searchParams }: HomeProps) {
-  const { category, page } = await searchParams
+  const { category, page, q } = await searchParams
   const currentPage = Math.max(1, parseInt(page ?? '1', 10) || 1)
 
   const supabase = await createClient()
+  const cats = category?.includes(',') ? category.split(',') : null
   let countQuery = supabase.from('articles').select('*', { count: 'exact', head: true })
-  if (category) countQuery = countQuery.eq('category', category)
+  if (cats) countQuery = countQuery.in('category', cats)
+  else if (category) countQuery = countQuery.eq('category', category)
+  if (q) countQuery = countQuery.or(`title.ilike.%${q}%,summary.ilike.%${q}%`)
   const { count } = await countQuery
   const total = count ?? 0
   const totalPages = Math.ceil(total / PAGE_SIZE)
@@ -37,6 +41,7 @@ export default async function Home({ searchParams }: HomeProps) {
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
             <span style={{ color: 'var(--text)' }}>{total} artículos</span> enriquecidos con IA
             {category && <> · Filtrando por <span style={{ color: 'var(--text)' }}>{category}</span></>}
+          {q && <> · Búsqueda: <span style={{ color: 'var(--text)' }}>&ldquo;{q}&rdquo;</span></>}
           </div>
         </div>
       </div>
@@ -46,6 +51,11 @@ export default async function Home({ searchParams }: HomeProps) {
         {/* Category filter */}
         <Suspense fallback={null}>
           <CategoryFilter />
+        </Suspense>
+
+        {/* Trending */}
+        <Suspense fallback={null}>
+          <TrendingStrip />
         </Suspense>
 
         {/* Section header */}
@@ -68,7 +78,7 @@ export default async function Home({ searchParams }: HomeProps) {
         </div>
 
         {/* Feed */}
-        <ArticleFeed category={category} page={currentPage} />
+        <ArticleFeed category={category} page={currentPage} q={q} />
       </main>
     </>
   )
