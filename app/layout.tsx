@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import ChatWidget from '@/components/chat/ChatWidget'
@@ -6,6 +6,11 @@ import ChatWidget from '@/components/chat/ChatWidget'
 export const metadata: Metadata = {
   title: 'TechNews',
   description: 'Noticias de tecnología enriquecidas con IA',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
